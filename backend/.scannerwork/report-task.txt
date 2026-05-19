@@ -1,0 +1,6 @@
+projectKey=oficinakey
+serverUrl=http://labens.dct.ufrn.br/sonarqube
+serverVersion=25.5.0.107428
+dashboardUrl=http://labens.dct.ufrn.br/sonarqube/dashboard?id=oficinakey
+ceTaskId=69ce9b2b-2cda-43c8-84ea-26bd4e7efbb1
+ceTaskUrl=http://labens.dct.ufrn.br/sonarqube/api/ce/task?id=69ce9b2b-2cda-43c8-84ea-26bd4e7efbb1
