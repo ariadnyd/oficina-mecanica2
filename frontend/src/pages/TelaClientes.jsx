@@ -4,12 +4,14 @@ import clienteServices from '../services/clienteServices';
 function TelaClientes() {
   const [clientes, setClientes] = useState([]);
   
-  // Caixas de memória para o formulário
+  // 1. Caixas de memória atualizadas para bater com todos os campos do Django
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [mensagem, setMensagem] = useState('');
 
-  // Função que busca os clientes do banco
   const carregarClientes = async () => {
     const dadosVindosDoDjango = await clienteServices.getClientes();
     setClientes(dadosVindosDoDjango);
@@ -19,39 +21,47 @@ function TelaClientes() {
     carregarClientes();
   }, []);
 
-  // Função disparada quando o usuário clica no botão "Salvar"
   const handleSubmeter = async (e) => {
-    e.preventDefault(); // Impede a página de recarregar do jeito antigo
+    e.preventDefault();
 
-    if (!nome || !cpf) {
-      setMensagem("Por favor, preencha todos os campos.");
+    // Validação para garantir que nenhum campo obrigatório vá vazio
+    if (!nome || !cpf || !dataNascimento || !endereco || !telefone) {
+      setMensagem("Por favor, preencha todos os campos obrigatórios.");
       return;
     }
 
     try {
-      const novoCliente = { nome, cpf };
+      // 2. Montando o objeto exatamente com os nomes do seu models.py
+      const novoCliente = { 
+        nome, 
+        cpf, 
+        data_nascimento: dataNascimento, // O Django espera snake_case
+        endereco, 
+        telefone 
+      };
       
-      // Envia para o Django através do serviço
       await clienteServices.cadastrarCliente(novoCliente);
       
       setMensagem("Cliente cadastrado com sucesso!");
       
-      // Limpa os campos do formulário
+      // Limpa todas as caixas de texto após o sucesso
       setNome('');
       setCpf('');
+      setDataNascimento('');
+      setEndereco('');
+      setTelefone('');
       
-      // Atualiza a lista na tela na mesma hora para mostrar o novo cliente!
       carregarClientes();
     } catch (erro) {
-      setMensagem("Erro ao cadastrar o cliente. Verifique os dados.");
+      setMensagem("Erro ao cadastrar o cliente. Verifique se o CPF já existe.");
     }
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'left' }}>
+    <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'left' }}>
       <h2>Módulo de Clientes</h2>
       
-      {/* Formulário de Cadastro */}
+      {/* Formulário de Cadastro Completo */}
       <form onSubmit={handleSubmeter} style={{ backgroundColor: 'var(--social-bg)', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
         <h3>Novo Cliente</h3>
         
@@ -63,17 +73,47 @@ function TelaClientes() {
             type="text" 
             value={nome} 
             onChange={(e) => setNome(e.target.value)} 
-            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)' }}
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', boxSizing: 'border-box' }}
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '10px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>CPF:</label>
           <input 
             type="text" 
             value={cpf} 
             onChange={(e) => setCpf(e.target.value)} 
-            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)' }}
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Data de Nascimento:</label>
+          <input 
+            type="date" // O tipo date já abre o calendário do navegador nativamente!
+            value={dataNascimento} 
+            onChange={(e) => setDataNascimento(e.target.value)} 
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Telefone:</label>
+          <input 
+            type="text" 
+            value={telefone} 
+            onChange={(e) => setTelefone(e.target.value)} 
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Endereço:</label>
+          <textarea 
+            value={endereco} 
+            onChange={(e) => setEndereco(e.target.value)} 
+            rows="3" // Transforma o input em um bloco maior de texto
+            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border)', boxSizing: 'border-box', resize: 'vertical' }}
           />
         </div>
 
@@ -82,15 +122,19 @@ function TelaClientes() {
         </button>
       </form>
 
-      {/* Listagem de Clientes */}
+      {/* Listagem de Clientes Exibindo os Novos Detalhes */}
       <h3>Clientes Cadastrados</h3>
       {clientes.length === 0 ? (
         <p>Carregando clientes ou nenhum cliente encontrado...</p>
       ) : (
         <ul style={{ listStyleType: 'none', padding: 0 }}>
           {clientes.map((cliente) => (
-            <li key={cliente.id} style={{ padding: '10px', borderBottom: '1px solid var(--border)' }}>
-              <strong>{cliente.nome}</strong> - CPF: {cliente.cpf}
+            <li key={cliente.id} style={{ padding: '12px', borderBottom: '1px solid var(--border)', lineHeight: '150%' }}>
+              <strong>{cliente.nome}</strong> <br />
+              <span style={{ fontSize: '14px', color: 'var(--text)' }}>
+                <strong>CPF:</strong> {cliente.cpf} | <strong>Telefone:</strong> {cliente.telefone} <br />
+                <strong>Endereço:</strong> {cliente.endereco}
+              </span>
             </li>
           ))}
         </ul>
