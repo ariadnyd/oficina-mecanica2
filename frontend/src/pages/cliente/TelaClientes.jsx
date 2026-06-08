@@ -86,7 +86,9 @@ function TelaClientes() {
                     <td style={{ padding: '12px' }}>{cliente.telefone}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
                       <button style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}>Editar</button>
-                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}>Excluir</button>
+                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }} onClick={() => handleExcluir(cliente.id, cliente.nome)}>
+                        Excluir
+                      </button>
                     </td>
                   </tr>
                 ))
