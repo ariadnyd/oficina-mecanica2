@@ -46,7 +46,17 @@ const clienteServices = {
       if (erro.response && erro.response.data) throw erro.response.data;
       throw erro;
     }
-  }
+  },
+  editarCliente: async (id, dadosAtualizados) => {
+    try {
+      // Usamos o PATCH para dizer ao Django: "Atualize apenas esses dados deste ID"
+      const resposta = await api.patch(`clientes/${id}/`, dadosAtualizados);
+      return resposta.data;
+    } catch (erro) {
+      if (erro.response && erro.response.data) throw erro.response.data;
+      throw erro;
+    }
+  },
 };
 
 export default clienteServices;
