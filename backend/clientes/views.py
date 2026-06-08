@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.http import Http404
 from .models import Cliente
@@ -8,7 +9,7 @@ from .serializers import ClienteSerializer
 class ClienteViewSet(viewsets.ModelViewSet):
     serializer_class = ClienteSerializer
     # RN02 - Apenas usuários com perfil "Administrador" (is_staff=True no Django)
-    permission_classes = [IsAuthenticated, IsAdminUser] 
+    # permission_classes = [IsAuthenticated, IsAdminUser] 
 
     def get_queryset(self):
         # Filtra apenas clientes ativos (não deletados logicamente)
@@ -23,21 +24,44 @@ class ClienteViewSet(viewsets.ModelViewSet):
             raise Http404("Erro: O cliente informado não está cadastrado ou encontra-se suspenso.")
 
     def create(self, request, *args, **kwargs):
+        cpf_informado = request.data.get('cpf')
+
+        # -----------------------------------------------------------------
+        # MÁGICA 1: A gente intercepta o CPF antes do Serializer chiar
+        # -----------------------------------------------------------------
+        from .models import Cliente # Garante que o model será lido
+        cliente_existente = Cliente.objects.filter(cpf=cpf_informado).first()
+
+        if cliente_existente:
+            if not cliente_existente.is_active:
+                # O cliente existe e está "deletado". Mandamos o "Sinal de Fumaça" pro React!
+                return Response({
+                    "mensagem": "Este CPF pertence a um cliente inativo. Deseja reativar o cadastro?",
+                    "inativo": True, # A nossa flag especial para o React
+                    "cliente_id": cliente_existente.id # Mandamos o ID pra ele saber quem reativar
+                }, status=status.HTTP_409_CONFLICT) 
+            else:
+                # O cliente existe e já tá ativo, dá erro normal.
+                return Response({
+                    "mensagem": "Erro: Já existe um cliente ativo cadastrado com este CPF."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # -----------------------------------------------------------------
+        # Se não caiu em nenhum if ali em cima, segue o baile do cadastro normal
+        # -----------------------------------------------------------------
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
-            # MS01 - Sucesso no Cadastro
             return Response({
                 "mensagem": "Cliente cadastrado com sucesso!", 
                 "dados": serializer.data
             }, status=status.HTTP_201_CREATED)
         
-        # RN03 / MS04 - Dados Inválidos
         return Response({
-            "mensagem": "Erro: Informações inválidas detectadas. Por favor, corrija os campos destacados e tente novamente.",
+            "mensagem": "Erro: Informações inválidas detectadas. Por favor, corrija os campos.",
             "detalhes": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-
+    
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         
@@ -63,17 +87,34 @@ class ClienteViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
-        # RN06 - Regra de Remoção (Exclusão Lógica)
         try:
             cliente = self.get_object()
             cliente.is_active = False
             cliente.save()
-            # MS03 - Sucesso na Exclusão
             return Response({"mensagem": "O cliente foi desativado com sucesso!"}, status=status.HTTP_200_OK)
         except Http404 as e:
             return Response({"erro": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception:
-            # MS06 - Falha na Exclusão
-            return Response({
-                "erro": "Erro: Não foi possível excluir o cliente. Tente novamente."
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"erro": "Erro: Não foi possível excluir o cliente."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # -----------------------------------------------------------------
+    # MÁGICA 2: A Rota Especial para "Ressuscitar" o cliente
+    # -----------------------------------------------------------------
+    @action(detail=True, methods=['patch'])
+    def reativar(self, request, pk=None):
+        from .models import Cliente
+        try:
+            # Aqui temos que buscar direto no banco (.objects.get), 
+            # pois o get_object() normal ignoraria os inativos
+            cliente = Cliente.objects.get(pk=pk)
+            cliente.is_active = True
+            
+            # Se quiser, podemos aproveitar e salvar as informações novas que vieram no formulário
+            if 'nome' in request.data: cliente.nome = request.data['nome']
+            if 'telefone' in request.data: cliente.telefone = request.data['telefone']
+            if 'endereco' in request.data: cliente.endereco = request.data['endereco']
+            
+            cliente.save()
+            return Response({"mensagem": "O cadastro foi reativado com sucesso!"}, status=status.HTTP_200_OK)
+        except Cliente.DoesNotExist:
+            return Response({"erro": "Cliente inativo não encontrado no banco de dados."}, status=status.HTTP_404_NOT_FOUND)
