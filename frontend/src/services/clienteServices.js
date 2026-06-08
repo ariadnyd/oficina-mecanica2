@@ -36,6 +36,16 @@ const clienteServices = {
       }
       throw erro;
     }
+  },
+  reativarCliente: async (id, dadosAtualizados) => {
+    try {
+      // Mandamos os dados novos para atualizar o endereço/telefone caso a pessoa tenha mudado
+      const resposta = await api.patch(`clientes/${id}/reativar/`, dadosAtualizados);
+      return resposta.data;
+    } catch (erro) {
+      if (erro.response && erro.response.data) throw erro.response.data;
+      throw erro;
+    }
   }
 };
 
