@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import clienteServices from '../../services/clienteServices';
-import FormCliente from './FormCliente'; // Importando o seu arquivo novo!
+import FormCliente from './FormCliente'; 
 
 function TelaClientes() {
   const [clientes, setClientes] = useState([]);
   const [exibirFormulario, setExibirFormulario] = useState(false);
+  const [clienteEmEdicao, setClienteEmEdicao] = useState(null); 
 
   const carregarClientes = async () => {
     const dadosVindosDoDjango = await clienteServices.getClientes();
@@ -15,21 +16,24 @@ function TelaClientes() {
     carregarClientes();
   }, []);
 
-  // Função que o formulário vai chamar quando der sucesso
   const handleSalvarSucesso = () => {
-    setExibirFormulario(false); // Esconde o formulário
-    carregarClientes(); // Recarrega a tabela atualizada
+    setExibirFormulario(false);
+    setClienteEmEdicao(null);
+    carregarClientes();
+  };
+
+  const handleAbrirEdicao = (cliente) => {
+    setClienteEmEdicao(cliente);
+    setExibirFormulario(true);
   };
 
   const handleExcluir = async (id, nome) => {
-    // O window.confirm abre aquela caixinha nativa do navegador perguntando "Ok" ou "Cancelar"
     const confirmacao = window.confirm(`Tem certeza que deseja excluir o cliente ${nome}?`);
-    
     if (confirmacao) {
       try {
         const resposta = await clienteServices.excluirCliente(id);
         alert(resposta.mensagem || "Cliente desativado com sucesso!");
-        carregarClientes(); // Recarrega a tabela na mesma hora!
+        carregarClientes();
       } catch (erro) {
         alert(erro.erro || "Erro ao excluir o cliente.");
       }
@@ -42,10 +46,12 @@ function TelaClientes() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Módulo de Clientes</h2>
         
-        {/* O botão fica no topo e muda a caixinha de memória para mostrar o formulário */}
         {!exibirFormulario && (
           <button 
-            onClick={() => setExibirFormulario(true)}
+            onClick={() => {
+              setClienteEmEdicao(null);
+              setExibirFormulario(true);
+            }}
             style={{ padding: '10px 15px', backgroundColor: 'var(--text-h)', color: 'var(--bg)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             + Cadastrar Novo Cliente
@@ -53,15 +59,17 @@ function TelaClientes() {
         )}
       </div>
 
-      {/* O Interruptor: Se for true, desenha o componente. Se for false, não faz nada. */}
       {exibirFormulario && (
         <FormCliente 
-          aoCancelar={() => setExibirFormulario(false)} 
+          clienteEmEdicao={clienteEmEdicao}
+          aoCancelar={() => {
+            setExibirFormulario(false);
+            setClienteEmEdicao(null);
+          }} 
           aoSalvarSucesso={handleSalvarSucesso} 
         />
       )}
 
-      {/* A Tabela de Clientes */}
       {!exibirFormulario && (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
@@ -85,8 +93,16 @@ function TelaClientes() {
                     <td style={{ padding: '12px' }}>{cliente.cpf}</td>
                     <td style={{ padding: '12px' }}>{cliente.telefone}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <button style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}>Editar</button>
-                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }} onClick={() => handleExcluir(cliente.id, cliente.nome)}>
+                      <button 
+                        onClick={() => handleAbrirEdicao(cliente)} 
+                        style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={() => handleExcluir(cliente.id, cliente.nome)}
+                        style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}
+                      >
                         Excluir
                       </button>
                     </td>
