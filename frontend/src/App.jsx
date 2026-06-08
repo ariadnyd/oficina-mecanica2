@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import TelaClientes from './pages/TelaClientes';
+import TelaClientes from './pages/cliente/TelaClientes';
 import './App.css';
+import TelaClientes from './pages/clientes/TelaClientes';
 
 function App() {
   return (

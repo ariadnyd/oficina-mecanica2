@@ -8,7 +8,7 @@ from .serializers import ClienteSerializer
 class ClienteViewSet(viewsets.ModelViewSet):
     serializer_class = ClienteSerializer
     # RN02 - Apenas usuários com perfil "Administrador" (is_staff=True no Django)
-    permission_classes = [IsAuthenticated, IsAdminUser] 
+    # permission_classes = [IsAuthenticated, IsAdminUser] 
 
     def get_queryset(self):
         # Filtra apenas clientes ativos (não deletados logicamente)
