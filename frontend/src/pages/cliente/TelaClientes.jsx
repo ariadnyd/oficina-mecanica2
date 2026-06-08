@@ -21,6 +21,21 @@ function TelaClientes() {
     carregarClientes(); // Recarrega a tabela atualizada
   };
 
+  const handleExcluir = async (id, nome) => {
+    // O window.confirm abre aquela caixinha nativa do navegador perguntando "Ok" ou "Cancelar"
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o cliente ${nome}?`);
+    
+    if (confirmacao) {
+      try {
+        const resposta = await clienteServices.excluirCliente(id);
+        alert(resposta.mensagem || "Cliente desativado com sucesso!");
+        carregarClientes(); // Recarrega a tabela na mesma hora!
+      } catch (erro) {
+        alert(erro.erro || "Erro ao excluir o cliente.");
+      }
+    }
+  };
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'left' }}>
       
