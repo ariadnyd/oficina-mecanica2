@@ -23,6 +23,19 @@ const clienteServices = {
       }
       throw erro; // Se for erro de internet/servidor fora do ar
     }
+  },
+
+  excluirCliente: async (id) => {
+    try {
+      // O axios manda um DELETE para a URL específica do cliente (ex: clientes/3/)
+      const resposta = await api.delete(`clientes/${id}/`);
+      return resposta.data;
+    } catch (erro) {
+      if (erro.response && erro.response.data) {
+        throw erro.response.data;
+      }
+      throw erro;
+    }
   }
 };
 
