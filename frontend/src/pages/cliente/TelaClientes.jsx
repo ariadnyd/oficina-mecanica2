@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import clienteServices from '../../services/clienteServices';
 import FormCliente from './FormCliente'; 
+import { Link } from 'react-router-dom';
 
 function TelaClientes() {
   const [clientes, setClientes] = useState([]);
@@ -89,7 +90,11 @@ function TelaClientes() {
               ) : (
                 clientes.map((cliente) => (
                   <tr key={cliente.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '12px' }}>{cliente.nome}</td>
+                    <td style={{ padding: '12px' }}>
+                      <Link to={`/clientes/${cliente.id}`} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 'bold' }}>
+                      {cliente.nome}
+                      </Link>
+                    </td>
                     <td style={{ padding: '12px' }}>{cliente.cpf}</td>
                     <td style={{ padding: '12px' }}>{cliente.telefone}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
