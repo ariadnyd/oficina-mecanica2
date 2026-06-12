@@ -1,25 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import veiculoServices from '../../services/veiculoServices';
+import FormVeiculo from './FormVeiculo'; // Importando a peça de Lego nova!
 
 function TelaVeiculos() {
-  // O Leitor de URL: Descobre se a gente clicou no botão lá do cliente!
   const [searchParams] = useSearchParams();
   const clienteIdNaUrl = searchParams.get('cliente_id');
 
   const [cpfBusca, setCpfBusca] = useState('');
   const [veiculos, setVeiculos] = useState([]);
   const [mensagem, setMensagem] = useState('');
-  const [buscou, setBuscou] = useState(false); // Pra saber se a gente já fez alguma pesquisa
+  const [buscou, setBuscou] = useState(false);
+  
+  // O Interruptor do Formulário
+  const [exibirFormulario, setExibirFormulario] = useState(false);
 
-  // MÁGICA 1: Se a tela abrir e tiver um ID na URL, ela busca os carros sozinha!
   useEffect(() => {
     if (clienteIdNaUrl) {
       buscarVeiculos({ cliente_id: clienteIdNaUrl });
     }
   }, [clienteIdNaUrl]);
 
-  // Função central para pedir os veículos ao Django
   const buscarVeiculos = async (filtros) => {
     setMensagem('Buscando veículos...');
     try {
@@ -33,7 +34,6 @@ function TelaVeiculos() {
     }
   };
 
-  // MÁGICA 2: A função da Lupinha (quando o usuário digita o CPF manualmente)
   const handlePesquisarCPF = (e) => {
     e.preventDefault();
     if (!cpfBusca) {
@@ -43,13 +43,44 @@ function TelaVeiculos() {
     buscarVeiculos({ cpf: cpfBusca });
   };
 
+  const handleSalvarSucesso = () => {
+    setExibirFormulario(false);
+    // Recarrega a lista dependendo de onde o usuário está
+    if (clienteIdNaUrl) {
+      buscarVeiculos({ cliente_id: clienteIdNaUrl });
+    } else if (cpfBusca) {
+      buscarVeiculos({ cpf: cpfBusca });
+    }
+  };
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'left' }}>
       
-      <h2>Módulo de Veículos</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Módulo de Veículos</h2>
+        
+        {/* BOTÃO DE CADASTRAR NO TOPO */}
+        {!exibirFormulario && (
+          <button 
+            onClick={() => setExibirFormulario(true)}
+            style={{ padding: '10px 15px', backgroundColor: 'var(--text-h)', color: 'var(--bg)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            + Cadastrar Novo Veículo
+          </button>
+        )}
+      </div>
 
-      {/* A BARRA DE PESQUISA (Só aparece se a pessoa NÃO tiver vindo pelo atalho) */}
-      {!clienteIdNaUrl && (
+      {/* EXIBE O FORMULÁRIO SE O INTERRUPTOR ESTIVER LIGADO */}
+      {exibirFormulario && (
+        <FormVeiculo 
+          clientePreSelecionado={clienteIdNaUrl} // Passa o ID se veio pelo atalho!
+          aoCancelar={() => setExibirFormulario(false)}
+          aoSalvarSucesso={handleSalvarSucesso}
+        />
+      )}
+
+      {/* A BARRA DE PESQUISA SOME SE O FORMULÁRIO ESTIVER ABERTO OU SE VEIO PELO ATALHO */}
+      {!exibirFormulario && !clienteIdNaUrl && (
         <form onSubmit={handlePesquisarCPF} style={{ backgroundColor: 'var(--social-bg)', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Buscar por CPF do Cliente:</label>
@@ -69,8 +100,7 @@ function TelaVeiculos() {
 
       {mensagem && <p style={{ fontWeight: 'bold', marginBottom: '15px' }}>{mensagem}</p>}
 
-      {/* A TABELA DE RESULTADOS */}
-      {buscou && (
+      {!exibirFormulario && buscou && (
         <div style={{ overflowX: 'auto', marginTop: '20px' }}>
           {clienteIdNaUrl && (
             <Link to={`/clientes/${clienteIdNaUrl}`} style={{ display: 'inline-block', marginBottom: '15px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 'bold' }}>
@@ -84,20 +114,25 @@ function TelaVeiculos() {
                 <th style={{ padding: '12px', textAlign: 'left' }}>Placa</th>
                 <th style={{ padding: '12px', textAlign: 'left' }}>Marca/Modelo</th>
                 <th style={{ padding: '12px', textAlign: 'left' }}>Ano</th>
+                <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th> {/* NOVA COLUNA */}
               </tr>
             </thead>
             <tbody>
               {veiculos.length === 0 ? (
                 <tr>
-                  <td colSpan="3" style={{ padding: '20px', textAlign: 'center' }}>Nenhum veículo encontrado para este cliente.</td>
+                  <td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>Nenhum veículo encontrado para este cliente.</td>
                 </tr>
               ) : (
                 veiculos.map((veiculo) => (
                   <tr key={veiculo.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    {/* Ajuste os nomes "placa", "marca", "modelo" e "ano" de acordo com o seu models.py do Django! */}
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{veiculo.placa}</td>
                     <td style={{ padding: '12px' }}>{veiculo.marca} {veiculo.modelo}</td>
                     <td style={{ padding: '12px' }}>{veiculo.ano}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      {/* BOTÕES POSICIONADOS COMO VOCÊ PEDIU */}
+                      <button style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}>Editar</button>
+                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}>Excluir</button>
+                    </td>
                   </tr>
                 ))
               )}
