@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.http import Http404
 from .models import Veiculo
+from clientes.models import Cliente
 from .serializers import VeiculoSerializer
 
 class VeiculoViewSet(viewsets.ModelViewSet):
@@ -41,12 +42,31 @@ class VeiculoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        if 'cliente' not in request.data or not request.data.get('cliente'):
+        # Cria uma cópia dos dados para podermos modificar com segurança
+        dados = request.data.copy() if hasattr(request.data, 'copy') else request.data
+
+        # MÁGICA: O tradutor de CPF para ID
+        cpf_informado = dados.get('cpf_dono')
+        if cpf_informado:
+            from clientes.models import Cliente # Puxa o modelo de Cliente para pesquisar
+            cliente = Cliente.objects.filter(cpf=cpf_informado, is_active=True).first()
+            
+            if not cliente:
+                return Response({
+                    "erro": f"Erro: Nenhum cliente ativo encontrado com o CPF {cpf_informado}."
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            # Achou o cliente? Troca o CPF pelo ID real para o banco de dados salvar!
+            dados['cliente'] = cliente.id
+
+        # Verifica se pelo menos o ID final chegou
+        if 'cliente' not in dados or not dados.get('cliente'):
             return Response(
-                {"erro": "Erro: Não é possível cadastrar o veículo. É necessário selecionar um cliente válido."}, 
+                {"erro": "Erro: Não é possível cadastrar o veículo. É necessário selecionar um cliente válido ou informar um CPF."}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-        serializer = self.get_serializer(data=request.data)
+            
+        serializer = self.get_serializer(data=dados)
         
         if not serializer.is_valid():
             return Response({

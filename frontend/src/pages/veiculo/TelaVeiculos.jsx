@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import veiculoServices from '../../services/veiculoServices';
-import FormVeiculo from './FormVeiculo'; // Importando a peça de Lego nova!
+import FormVeiculo from './FormVeiculo'; 
 
 function TelaVeiculos() {
   const [searchParams] = useSearchParams();
@@ -11,8 +11,6 @@ function TelaVeiculos() {
   const [veiculos, setVeiculos] = useState([]);
   const [mensagem, setMensagem] = useState('');
   const [buscou, setBuscou] = useState(false);
-  
-  // O Interruptor do Formulário
   const [exibirFormulario, setExibirFormulario] = useState(false);
 
   useEffect(() => {
@@ -45,7 +43,6 @@ function TelaVeiculos() {
 
   const handleSalvarSucesso = () => {
     setExibirFormulario(false);
-    // Recarrega a lista dependendo de onde o usuário está
     if (clienteIdNaUrl) {
       buscarVeiculos({ cliente_id: clienteIdNaUrl });
     } else if (cpfBusca) {
@@ -54,12 +51,11 @@ function TelaVeiculos() {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'left' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'left' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Módulo de Veículos</h2>
         
-        {/* BOTÃO DE CADASTRAR NO TOPO */}
         {!exibirFormulario && (
           <button 
             onClick={() => setExibirFormulario(true)}
@@ -70,16 +66,14 @@ function TelaVeiculos() {
         )}
       </div>
 
-      {/* EXIBE O FORMULÁRIO SE O INTERRUPTOR ESTIVER LIGADO */}
       {exibirFormulario && (
         <FormVeiculo 
-          clientePreSelecionado={clienteIdNaUrl} // Passa o ID se veio pelo atalho!
+          clientePreSelecionado={clienteIdNaUrl} 
           aoCancelar={() => setExibirFormulario(false)}
           aoSalvarSucesso={handleSalvarSucesso}
         />
       )}
 
-      {/* A BARRA DE PESQUISA SOME SE O FORMULÁRIO ESTIVER ABERTO OU SE VEIO PELO ATALHO */}
       {!exibirFormulario && !clienteIdNaUrl && (
         <form onSubmit={handlePesquisarCPF} style={{ backgroundColor: 'var(--social-bg)', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
           <div style={{ flex: 1 }}>
@@ -112,24 +106,25 @@ function TelaVeiculos() {
             <thead>
               <tr style={{ backgroundColor: 'var(--social-bg)', borderBottom: '2px solid var(--border)' }}>
                 <th style={{ padding: '12px', textAlign: 'left' }}>Placa</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Marca/Modelo</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Ano</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th> {/* NOVA COLUNA */}
+                <th style={{ padding: '12px', textAlign: 'left' }}>Veículo</th>
+                <th style={{ padding: '12px', textAlign: 'left' }}>Cor</th>
+                <th style={{ padding: '12px', textAlign: 'center' }}>Ano</th> {/* COLUNA ANO AQUI */}
+                <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
               </tr>
             </thead>
             <tbody>
               {veiculos.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>Nenhum veículo encontrado para este cliente.</td>
+                  <td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>Nenhum veículo encontrado para este cliente.</td>
                 </tr>
               ) : (
                 veiculos.map((veiculo) => (
                   <tr key={veiculo.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{veiculo.placa}</td>
-                    <td style={{ padding: '12px' }}>{veiculo.marca} {veiculo.modelo}</td>
-                    <td style={{ padding: '12px' }}>{veiculo.ano}</td>
+                    <td style={{ padding: '12px' }}>{veiculo.tipo} - {veiculo.marca} {veiculo.modelo}</td>
+                    <td style={{ padding: '12px' }}>{veiculo.cor}</td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>{veiculo.ano}</td> {/* DADO DO ANO AQUI */}
                     <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {/* BOTÕES POSICIONADOS COMO VOCÊ PEDIU */}
                       <button style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}>Editar</button>
                       <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}>Excluir</button>
                     </td>
