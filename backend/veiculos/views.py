@@ -6,8 +6,24 @@ from .models import Veiculo
 from .serializers import VeiculoSerializer
 
 class VeiculoViewSet(viewsets.ModelViewSet):
-    queryset = Veiculo.objects.all()
     serializer_class = VeiculoSerializer
+
+    # 1. Transformamos o queryset em uma função dinâmica
+    def get_queryset(self):
+        queryset = Veiculo.objects.all()
+        
+        # MÁGICA 1: Se o React mandar '?cliente_id=X' (Vindo do detalhamento do cliente)
+        cliente_id = self.request.query_params.get('cliente_id')
+        if cliente_id:
+            queryset = queryset.filter(cliente_id=cliente_id)
+            
+        # MÁGICA 2: Se o React mandar '?cpf=Y' (Vindo da barra de pesquisa com a lupinha)
+        cpf = self.request.query_params.get('cpf')
+        if cpf:
+            # O 'cliente__cpf' entra na tabela de clientes e busca pelo campo 'cpf' lá dentro
+            queryset = queryset.filter(cliente__cpf=cpf)
+            
+        return queryset
 
     def get_object(self):
         try:

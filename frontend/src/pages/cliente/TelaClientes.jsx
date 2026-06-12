@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import clienteServices from '../../services/clienteServices';
 import FormCliente from './FormCliente'; 
+import DetalhesCliente from './DetalhesCliente';
 import { Link } from 'react-router-dom';
 
 function TelaClientes() {
