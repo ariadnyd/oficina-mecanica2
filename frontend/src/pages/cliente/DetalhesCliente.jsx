@@ -70,6 +70,20 @@ function DetalhesCliente() {
           <p style={{ margin: 0, fontSize: '18px', lineHeight: '1.5' }}>{cliente.endereco}</p>
         </div>
       </div>
+      <div style={{ marginTop: '20px' }}>
+          <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Endereço Completo:</strong></p>
+          <p style={{ margin: 0, fontSize: '18px', lineHeight: '1.5' }}>{cliente.endereco}</p>
+        </div>
+
+        {/* SEU NOVO BOTÃO DE ATALHO AQUI! */}
+        <div style={{ marginTop: '30px', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+          <Link 
+            to={`/veiculos?cliente_id=${cliente.id}`} 
+            style={{ padding: '10px 20px', backgroundColor: 'var(--accent)', color: 'white', textDecoration: 'none', borderRadius: '4px', fontWeight: 'bold', display: 'inline-block' }}
+          >
+            🚗 Visualizar Veículos Cadastrados
+          </Link>
+        </div>
     </div>
   );
 }
