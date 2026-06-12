@@ -12,7 +12,17 @@ const veiculoServices = {
       console.error("Erro ao buscar veículos:", erro);
       throw erro;
     }
-  }
+  },
+  cadastrarVeiculo: async (dadosVeiculo) => {
+    try {
+      // O Django espera receber os dados do veículo, incluindo o ID do cliente dono dele
+      const resposta = await api.post('veiculos/', dadosVeiculo);
+      return resposta.data; 
+    } catch (erro) {
+      if (erro.response && erro.response.data) throw erro.response.data; 
+      throw erro;
+    }
+  },
 };
 
 export default veiculoServices;

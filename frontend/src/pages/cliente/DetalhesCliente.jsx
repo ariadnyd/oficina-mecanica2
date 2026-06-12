@@ -41,40 +41,34 @@ function DetalhesCliente() {
         <h3 style={{ marginTop: 0, borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Informações do Cliente</h3>
         
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-          <div>
-            <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>CPF:</strong></p>
-            <p style={{ margin: 0, fontSize: '18px' }}>{cliente.cpf}</p>
-          </div>
-          
-          <div>
-            <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Data de Nascimento:</strong></p>
-            {/* Formatando a data do padrão americano pro padrão BR (opcional, mas fica lindo!) */}
-            <p style={{ margin: 0, fontSize: '18px' }}>{cliente.data_nascimento.split('-').reverse().join('/')}</p>
-          </div>
+            <div>
+                <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>CPF:</strong></p>
+                <p style={{ margin: 0, fontSize: '18px' }}>{cliente.cpf}</p>
+            </div>
+            
+            <div>
+                <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Data de Nascimento:</strong></p>
+                {/* Formatando a data do padrão americano pro padrão BR (opcional, mas fica lindo!) */}
+                <p style={{ margin: 0, fontSize: '18px' }}>{cliente.data_nascimento.split('-').reverse().join('/')}</p>
+            </div>
 
-          <div>
-            <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Telefone:</strong></p>
-            <p style={{ margin: 0, fontSize: '18px' }}>{cliente.telefone}</p>
-          </div>
+            <div>
+                <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Telefone:</strong></p>
+                <p style={{ margin: 0, fontSize: '18px' }}>{cliente.telefone}</p>
+            </div>
 
-          <div>
-            <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Status:</strong></p>
-            <p style={{ margin: 0, fontSize: '18px', color: cliente.is_active ? '#5cb85c' : '#d9534f', fontWeight: 'bold' }}>
-              {cliente.is_active ? 'Ativo' : 'Inativo'}
-            </p>
-          </div>
+            <div>
+                <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Status:</strong></p>
+                <p style={{ margin: 0, fontSize: '18px', color: cliente.is_active ? '#5cb85c' : '#d9534f', fontWeight: 'bold' }}>
+                {cliente.is_active ? 'Ativo' : 'Inativo'}
+                </p>
+            </div>
+            <div style={{ marginTop: '20px' }}>
+                <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Endereço Completo:</strong></p>
+                <p style={{ margin: 0, fontSize: '18px', lineHeight: '1.5' }}>{cliente.endereco}</p>
+            </div>
         </div>
-
-        <div style={{ marginTop: '20px' }}>
-          <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Endereço Completo:</strong></p>
-          <p style={{ margin: 0, fontSize: '18px', lineHeight: '1.5' }}>{cliente.endereco}</p>
         </div>
-      </div>
-      <div style={{ marginTop: '20px' }}>
-          <p style={{ margin: '0 0 5px', color: 'var(--text)' }}><strong>Endereço Completo:</strong></p>
-          <p style={{ margin: 0, fontSize: '18px', lineHeight: '1.5' }}>{cliente.endereco}</p>
-        </div>
-
         {/* SEU NOVO BOTÃO DE ATALHO AQUI! */}
         <div style={{ marginTop: '30px', textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
           <Link 
