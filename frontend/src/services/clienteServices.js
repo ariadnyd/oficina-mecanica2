@@ -57,6 +57,15 @@ const clienteServices = {
       throw erro;
     }
   },
+  getClientePorId: async (id) => {
+    try {
+      const resposta = await api.get(`clientes/${id}/`);
+      return resposta.data;
+    } catch (erro) {
+      console.error("Erro ao buscar detalhes do cliente:", erro);
+      throw erro;
+    }
+  },
 };
 
 export default clienteServices;
