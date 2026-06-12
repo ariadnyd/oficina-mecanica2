@@ -17,7 +17,8 @@ function App() {
         {/* O "GPS" que decide qual tela renderizar no meio da página */}
         <Routes>
           <Route path="/clientes" element={<TelaClientes />} />
-          {/* Futuramente, quando criar a OS, é só adicionar a rota dela aqui embaixo! */}
+          {/* NOVA ROTA AQUI: O ":id" avisa o React que esse pedaço da URL é uma variável */}
+          <Route path="/clientes/:id" element={<DetalhesCliente />} />
         </Routes>
       </main>
     </BrowserRouter>
