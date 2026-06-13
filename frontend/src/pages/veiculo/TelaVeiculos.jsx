@@ -12,6 +12,9 @@ function TelaVeiculos() {
   const [mensagem, setMensagem] = useState('');
   const [buscou, setBuscou] = useState(false);
   const [exibirFormulario, setExibirFormulario] = useState(false);
+  
+  // CAIXA DE MEMÓRIA DO VEÍCULO
+  const [veiculoEmEdicao, setVeiculoEmEdicao] = useState(null);
 
   useEffect(() => {
     if (clienteIdNaUrl) {
@@ -43,10 +46,37 @@ function TelaVeiculos() {
 
   const handleSalvarSucesso = () => {
     setExibirFormulario(false);
+    setVeiculoEmEdicao(null); // Limpa a memória
     if (clienteIdNaUrl) {
       buscarVeiculos({ cliente_id: clienteIdNaUrl });
     } else if (cpfBusca) {
       buscarVeiculos({ cpf: cpfBusca });
+    }
+  };
+
+  // A FUNÇÃO DO BOTÃO EDITAR
+  const handleAbrirEdicao = (veiculo) => {
+    setVeiculoEmEdicao(veiculo);
+    setExibirFormulario(true);
+  };
+
+  const handleExcluir = async (id, placa) => {
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o veículo de placa ${placa}?`);
+    
+    if (confirmacao) {
+      try {
+        const resposta = await veiculoServices.excluirVeiculo(id);
+        alert(resposta.mensagem || "Veículo excluído com sucesso!");
+        
+        // Recarrega a tabela para o carro sumir da tela na mesma hora
+        if (clienteIdNaUrl) {
+          buscarVeiculos({ cliente_id: clienteIdNaUrl });
+        } else if (cpfBusca) {
+          buscarVeiculos({ cpf: cpfBusca });
+        }
+      } catch (erro) {
+        alert(erro.erro || "Erro ao tentar excluir o veículo.");
+      }
     }
   };
 
@@ -58,7 +88,10 @@ function TelaVeiculos() {
         
         {!exibirFormulario && (
           <button 
-            onClick={() => setExibirFormulario(true)}
+            onClick={() => {
+              setVeiculoEmEdicao(null);
+              setExibirFormulario(true);
+            }}
             style={{ padding: '10px 15px', backgroundColor: 'var(--text-h)', color: 'var(--bg)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             + Cadastrar Novo Veículo
@@ -68,8 +101,12 @@ function TelaVeiculos() {
 
       {exibirFormulario && (
         <FormVeiculo 
-          clientePreSelecionado={clienteIdNaUrl} 
-          aoCancelar={() => setExibirFormulario(false)}
+          clientePreSelecionado={clienteIdNaUrl}
+          veiculoEmEdicao={veiculoEmEdicao} // Passando o bastão!
+          aoCancelar={() => {
+            setExibirFormulario(false);
+            setVeiculoEmEdicao(null);
+          }}
           aoSalvarSucesso={handleSalvarSucesso}
         />
       )}
@@ -108,7 +145,7 @@ function TelaVeiculos() {
                 <th style={{ padding: '12px', textAlign: 'left' }}>Placa</th>
                 <th style={{ padding: '12px', textAlign: 'left' }}>Veículo</th>
                 <th style={{ padding: '12px', textAlign: 'left' }}>Cor</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>Ano</th> {/* COLUNA ANO AQUI */}
+                <th style={{ padding: '12px', textAlign: 'center' }}>Ano</th>
                 <th style={{ padding: '12px', textAlign: 'center' }}>Ações</th>
               </tr>
             </thead>
@@ -123,10 +160,20 @@ function TelaVeiculos() {
                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{veiculo.placa}</td>
                     <td style={{ padding: '12px' }}>{veiculo.tipo} - {veiculo.marca} {veiculo.modelo}</td>
                     <td style={{ padding: '12px' }}>{veiculo.cor}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{veiculo.ano}</td> {/* DADO DO ANO AQUI */}
+                    <td style={{ padding: '12px', textAlign: 'center' }}>{veiculo.ano}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <button style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}>Editar</button>
-                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}>Excluir</button>
+                        <button 
+                            onClick={() => handleAbrirEdicao(veiculo)} 
+                            style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}
+                        >
+                            Editar
+                        </button>
+                        <button 
+                            onClick={() => handleExcluir(veiculo.id, veiculo.placa)}
+                            style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}
+                        >
+                            Excluir
+                        </button>
                     </td>
                   </tr>
                 ))
