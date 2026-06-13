@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import clienteServices from '../../services/clienteServices';
 import FormCliente from './FormCliente'; 
-import DetalhesCliente from './DetalhesCliente';
-import { Link } from 'react-router-dom';
 
 function TelaClientes() {
   const [clientes, setClientes] = useState([]);
   const [exibirFormulario, setExibirFormulario] = useState(false);
   const [clienteEmEdicao, setClienteEmEdicao] = useState(null); 
+  
+  // NOVA CAIXA DE MEMÓRIA PARA A BUSCA
+  const [termoBusca, setTermoBusca] = useState('');
 
   const carregarClientes = async () => {
     const dadosVindosDoDjango = await clienteServices.getClientes();
@@ -42,6 +44,15 @@ function TelaClientes() {
     }
   };
 
+  // MÁGICA DA BUSCA: Filtra a lista em tempo real!
+  const clientesFiltrados = clientes.filter((cliente) => {
+    const termo = termoBusca.toLowerCase();
+    return (
+      cliente.nome.toLowerCase().includes(termo) ||
+      cliente.cpf.includes(termo) // Permite buscar por CPF também!
+    );
+  });
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'left' }}>
       
@@ -60,6 +71,28 @@ function TelaClientes() {
           </button>
         )}
       </div>
+
+      {/* A BARRA DE PESQUISA */}
+      {!exibirFormulario && (
+        <div style={{ marginBottom: '20px' }}>
+          <input 
+            type="text" 
+            placeholder="🔍 Buscar cliente por nome ou CPF..." 
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+            style={{ 
+              width: '100%', 
+              padding: '12px 15px', 
+              borderRadius: '8px', 
+              border: '1px solid var(--border)', 
+              backgroundColor: 'var(--social-bg)',
+              color: 'var(--text)',
+              fontSize: '16px',
+              boxSizing: 'border-box'
+            }}
+          />
+        </div>
+      )}
 
       {exibirFormulario && (
         <FormCliente 
@@ -84,16 +117,19 @@ function TelaClientes() {
               </tr>
             </thead>
             <tbody>
-              {clientes.length === 0 ? (
+              {/* Usa os clientesFiltrados em vez da lista original */}
+              {clientesFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>Nenhum cliente cadastrado.</td>
+                  <td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>
+                    {clientes.length === 0 ? "Nenhum cliente cadastrado." : "Nenhum cliente encontrado na busca."}
+                  </td>
                 </tr>
               ) : (
-                clientes.map((cliente) => (
+                clientesFiltrados.map((cliente) => (
                   <tr key={cliente.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px' }}>
                       <Link to={`/clientes/${cliente.id}`} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 'bold' }}>
-                      {cliente.nome}
+                        {cliente.nome}
                       </Link>
                     </td>
                     <td style={{ padding: '12px' }}>{cliente.cpf}</td>
