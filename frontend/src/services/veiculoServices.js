@@ -33,6 +33,15 @@ const veiculoServices = {
       throw erro;
     }
   },
+  excluirVeiculo: async (id) => {
+    try {
+      const resposta = await api.delete(`veiculos/${id}/`);
+      return resposta.data;
+    } catch (erro) {
+      if (erro.response && erro.response.data) throw erro.response.data;
+      throw erro;
+    }
+  }
 };
 
 export default veiculoServices;
