@@ -60,6 +60,26 @@ function TelaVeiculos() {
     setExibirFormulario(true);
   };
 
+  const handleExcluir = async (id, placa) => {
+    const confirmacao = window.confirm(`Tem certeza que deseja excluir o veículo de placa ${placa}?`);
+    
+    if (confirmacao) {
+      try {
+        const resposta = await veiculoServices.excluirVeiculo(id);
+        alert(resposta.mensagem || "Veículo excluído com sucesso!");
+        
+        // Recarrega a tabela para o carro sumir da tela na mesma hora
+        if (clienteIdNaUrl) {
+          buscarVeiculos({ cliente_id: clienteIdNaUrl });
+        } else if (cpfBusca) {
+          buscarVeiculos({ cpf: cpfBusca });
+        }
+      } catch (erro) {
+        alert(erro.erro || "Erro ao tentar excluir o veículo.");
+      }
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'left' }}>
       
@@ -142,15 +162,18 @@ function TelaVeiculos() {
                     <td style={{ padding: '12px' }}>{veiculo.cor}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>{veiculo.ano}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>
-                      <button 
-                        onClick={() => handleAbrirEdicao(veiculo)} 
-                        style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}
-                      >
-                        Editar
-                      </button>
-                      <button style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}>
-                        Excluir
-                      </button>
+                        <button 
+                            onClick={() => handleAbrirEdicao(veiculo)} 
+                            style={{ marginRight: '8px', padding: '5px 10px', cursor: 'pointer', backgroundColor: '#f0ad4e', border: 'none', borderRadius: '4px', color: '#fff' }}
+                        >
+                            Editar
+                        </button>
+                        <button 
+                            onClick={() => handleExcluir(veiculo.id, veiculo.placa)}
+                            style={{ padding: '5px 10px', cursor: 'pointer', backgroundColor: '#d9534f', border: 'none', borderRadius: '4px', color: '#fff' }}
+                        >
+                            Excluir
+                        </button>
                     </td>
                   </tr>
                 ))
