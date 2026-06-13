@@ -23,6 +23,16 @@ const veiculoServices = {
       throw erro;
     }
   },
+  editarVeiculo: async (id, dadosAtualizados) => {
+    try {
+      // Usamos o PATCH para atualizar apenas os dados enviados
+      const resposta = await api.patch(`veiculos/${id}/`, dadosAtualizados);
+      return resposta.data;
+    } catch (erro) {
+      if (erro.response && erro.response.data) throw erro.response.data;
+      throw erro;
+    }
+  },
 };
 
 export default veiculoServices;
