@@ -8,5 +8,6 @@ urlpatterns = [
     path('api/', include('veiculos.urls')),
     path('api/', include('core.urls')),
     path('api/', include('ordens_servico.urls')),
+    path('api/core/', include('core.urls')),path('api/core/', include('core.urls')),
 ]
 
