@@ -9,7 +9,7 @@ function TelaInsumos() {
 
   const carregarInsumos = async () => {
     try {
-      const resposta = await api.get('core/insumos/'); // Ajuste a rota se estiver diferente no seu urls.py
+      const resposta = await api.get('core/insumo/'); // Ajuste a rota se estiver diferente no seu urls.py
       setInsumos(resposta.data);
     } catch (erro) {
       mostrarMensagem('Erro ao carregar o estoque.', 'erro');
@@ -42,11 +42,11 @@ function TelaInsumos() {
     try {
       if (editandoId) {
         // Atualizar
-        await api.put(`core/insumos/${editandoId}/`, formData);
+        await api.put(`core/insumo/${editandoId}/`, formData);
         mostrarMensagem('Dados do insumo atualizados com sucesso!', 'sucesso');
       } else {
         // Cadastrar Novo
-        await api.post('core/insumos/', formData);
+        await api.post('core/insumo/', formData);
         mostrarMensagem('Insumo cadastrado com sucesso!', 'sucesso');
       }
       setFormData({ nome: '', marca: '', descricao: '', quantidade: 0 });
@@ -77,7 +77,7 @@ function TelaInsumos() {
   const handleExcluir = async (id) => {
     if (window.confirm('Tem certeza que deseja desativar este insumo do sistema?')) {
       try {
-        await api.delete(`core/insumos/${id}/`);
+        await api.delete(`core/insumo/${id}/`);
         mostrarMensagem('O insumo foi desativado com sucesso!', 'sucesso');
         carregarInsumos();
       } catch (erro) {

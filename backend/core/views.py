@@ -24,9 +24,18 @@ class IsAdminOrReadOnlyCreate(BasePermission):
         return False
 
 class InsumosViewSet(viewsets.ModelViewSet):
-    queryset = Insumos.objects.all()
+    queryset = Insumos.objects.filter(is_active=True)
     serializer_class = InsumosSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated] 
+
+    def destroy(self, request, *args, **kwargs):
+        insumo = self.get_object()
+        insumo.is_active = False
+        insumo.save()
+        return Response(
+            {"detail": "O insumo foi desativado com sucesso!"},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 class ProcedimentoViewSet(viewsets.ModelViewSet):
     queryset = Procedimento.objects.filter(is_active=True)
