@@ -1,8 +1,7 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
 class RegisterSerializer(serializers.ModelSerializer):
-    # Tornamos a senha 'write_only' para que ela NUNCA seja retornada na resposta da API
     password = serializers.CharField(write_only=True, required=True, min_length=6)
 
     class Meta:
@@ -10,7 +9,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'password', 'is_staff')
 
     def create(self, validated_data):
-        # O método create_user do ORM do Django já faz o hash (criptografia) da senha automaticamente
+        # Aqui, ao criar, definimos o is_staff conforme o enviado
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
@@ -18,10 +17,3 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_staff=validated_data.get('is_staff', False),
         )
         return user
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'is_staff', 'is_active')
-        # Impedir que usuários comuns alterem seu próprio status de staff
-        read_only_fields = ('is_staff', 'is_active')
