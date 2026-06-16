@@ -44,6 +44,32 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user.is_staff:
             return User.objects.all()
         return User.objects.filter(id=user.id)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object() 
+        usuario_logado = request.user 
+
+        if 'is_staff' in request.data:
+            novo_is_staff = request.data['is_staff']
+
+            if instance.is_staff and not novo_is_staff:
+                
+                # TRAVA 1: O Admin não pode rebaixar a si mesmo
+                if usuario_logado.id == instance.id:
+                    return Response(
+                        {"detail": "⚠️ Segurança: Você não pode remover seus próprios privilégios de Administrador!"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # TRAVA 2: Não pode remover se ele for o ÚNICO admin do sistema
+                total_admins = User.objects.filter(is_staff=True).count()
+                if total_admins <= 1:
+                    return Response(
+                        {"detail": "⚠️ Segurança: Este é o único Administrador do sistema. Promova outro usuário antes de rebaixar este!"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+        return super().update(request, *args, **kwargs)
 
 class UserListView(generics.ListAPIView):
     """
