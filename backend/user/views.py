@@ -6,18 +6,21 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, UserSerializer
 
+class IsAdminUser(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.is_staff
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    # Permitir que qualquer pessoa acesse a rota de registro sem estar logada
-    permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
+    # Trocamos o AllowAny por IsAdminUser. Só o ADM cadastra gente nova!
+    permission_classes = (IsAdminUser,)
 
 class LogoutView(APIView):
   permission_classes = (IsAuthenticated,)
 
   def post(self, request):
     try:
-      # PEGA O REFRESH DO FRONTEND E COLOCA-O EM UMA LISTA NEGRA.
       refresh_token = request.data["refresh"]
       token = RefreshToken(refresh_token)
       token.blacklist()
