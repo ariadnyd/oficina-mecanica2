@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, UserSerializer
 
+# Sua classe de permissão personalizada
 class IsAdminUser(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.is_staff
@@ -17,17 +18,17 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (IsAdminUser,)
 
 class LogoutView(APIView):
-  permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
-  def post(self, request):
-    try:
-      refresh_token = request.data["refresh"]
-      token = RefreshToken(refresh_token)
-      token.blacklist()
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
 
-      return Response(status=status.HTTP_205_RESET_CONTENT)
-    except Exception as e:
-      return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
   
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
@@ -43,3 +44,11 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user.is_staff:
             return User.objects.all()
         return User.objects.filter(id=user.id)
+
+class UserListView(generics.ListAPIView):
+    """
+    View para o Admin listar todos os usuários cadastrados.
+    """
+    queryset = User.objects.all().order_by('id')
+    serializer_class = UserSerializer
+    permission_classes = (IsAdminUser,) 

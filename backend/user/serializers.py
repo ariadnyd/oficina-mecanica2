@@ -25,4 +25,4 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'is_staff', 'is_active')
         # Impedir que usuários comuns alterem seu próprio status de staff e fiquem com superpoderes
-        read_only_fields = ('is_staff', 'is_active')
+        read_only_fields = ['is_active']
